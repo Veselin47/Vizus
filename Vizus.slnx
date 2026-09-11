@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="Vizus.API/Vizus.API.csproj" />
+    <Project Path="Vizus.Application.Tests/Vizus.Application.Tests.csproj" />
+    <Project Path="Vizus.Application/Vizus.Application.csproj" />
+    <Project Path="Vizus.Domain.Tests/Vizus.Domain.Tests.csproj" />
+    <Project Path="Vizus.Domain/Vizus.Domain.csproj" />
+    <Project Path="Vizus.Infrastructure/Vizus.Infrastructure.csproj" />
+  </Folder>
+</Solution>
