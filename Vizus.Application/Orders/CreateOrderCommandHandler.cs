@@ -44,7 +44,8 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Cre
                 ProductId = product.Id,
                 ProductName = product.Name,
                 UnitPrice = product.Price,
-                Quantity = item.Quantity
+                Quantity = item.Quantity,
+                ProductImageUrl = product.ImageUrl
             });
 
             total += product.Price * item.Quantity;

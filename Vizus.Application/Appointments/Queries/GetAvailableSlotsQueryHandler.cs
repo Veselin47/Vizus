@@ -1,55 +1,34 @@
 ﻿using MediatR;
-using Vizus.Domain.Enums;
+using Vizus.Application.Common.Interfaces;
 using Vizus.Domain.Interfaces;
 
 namespace Vizus.Application.Appointments;
 
-public class GetAvailableSlotsQueryHandler : IRequestHandler<GetAvailableSlotsQuery, List<TimeSlotDto>>
+public class GetAllAppointmentsQueryHandler : IRequestHandler<GetAllAppointmentsQuery, List<AppointmentAdminDto>>
 {
-    private static readonly TimeSpan SlotDuration = TimeSpan.FromMinutes(30);
-
-    private readonly IDoctorRepository _doctorRepository;
     private readonly IAppointmentRepository _appointmentRepository;
+    private readonly IUserLookupService _userLookupService;
 
-    public GetAvailableSlotsQueryHandler(IDoctorRepository doctorRepository, IAppointmentRepository appointmentRepository)
+    public GetAllAppointmentsQueryHandler(IAppointmentRepository appointmentRepository, IUserLookupService userLookupService)
     {
-        _doctorRepository = doctorRepository;
         _appointmentRepository = appointmentRepository;
+        _userLookupService = userLookupService;
     }
 
-    public async Task<List<TimeSlotDto>> Handle(GetAvailableSlotsQuery request, CancellationToken ct)
+    public async Task<List<AppointmentAdminDto>> Handle(GetAllAppointmentsQuery request, CancellationToken ct)
     {
-        var doctor = await _doctorRepository.GetByIdAsync(request.DoctorId, ct)
-            ?? throw new KeyNotFoundException("Лекарят не съществува.");
+        var appointments = await _appointmentRepository.GetAllAsync(ct);
 
-        // 1. Проверка дали докторът въобще работи в този ден от седмицата
-        var dayOfWeek = request.Date.DayOfWeek;
-        if (!doctor.GetWorkingDays().Contains(dayOfWeek))
-            return new List<TimeSlotDto>();
+        var userIds = appointments.Select(a => a.PatientUserId).Distinct().ToList();
+        var emails = await _userLookupService.GetEmailsByIdsAsync(userIds, ct);
 
-        // 2. Проверка за отпуск на конкретната дата
-        var timeOffs = await _appointmentRepository.GetTimeOffAsync(request.DoctorId, request.Date, ct);
-        if (timeOffs.Any())
-            return new List<TimeSlotDto>();
-
-        // 3. Генерираме всички теоретични 30-мин слотове в рамките на работния ден
-        var allSlots = new List<TimeSlotDto>();
-        var current = request.Date.ToDateTime(TimeOnly.FromTimeSpan(doctor.WorkStartTime));
-        var end = request.Date.ToDateTime(TimeOnly.FromTimeSpan(doctor.WorkEndTime));
-
-        while (current + SlotDuration <= end)
+        return appointments.Select(a => new AppointmentAdminDto
         {
-            allSlots.Add(new TimeSlotDto(current, current + SlotDuration));
-            current += SlotDuration;
-        }
-
-        // 4. Изваждаме вече заетите слотове (Pending или Confirmed - Cancelled не пречи)
-        var existingAppointments = await _appointmentRepository.GetByDoctorAndDateAsync(request.DoctorId, request.Date, ct);
-        var occupied = existingAppointments
-            .Where(a => a.Status != AppointmentStatus.Cancelled)
-            .Select(a => a.StartTime)
-            .ToHashSet();
-
-        return allSlots.Where(slot => !occupied.Contains(slot.Start)).ToList();
+            Id = a.Id,
+            DoctorName = a.Doctor.FullName,
+            PatientEmail = emails.GetValueOrDefault(a.PatientUserId, "—"),
+            StartTime = a.StartTime,
+            Status = a.Status.ToString()
+        }).ToList();
     }
 }

@@ -24,4 +24,8 @@
 		<ProjectReference Include="..\Vizus.Infrastructure\Vizus.Infrastructure.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Folder Include="wwwroot\images\" />
+	</ItemGroup>
+
 </Project>

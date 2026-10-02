@@ -26,7 +26,10 @@ public class StripeCheckoutService : IPaymentService
                 UnitAmount = (long)(item.UnitPrice * 100), // Stripe работи в стотинки, не в лева
                 ProductData = new SessionLineItemPriceDataProductDataOptions
                 {
-                    Name = item.ProductName
+                    Name = item.ProductName,
+                    Images = !string.IsNullOrEmpty(item.ProductImageUrl)
+                        ? new List<string> { $"{_configuration["Stripe:PublicBaseUrl"]}{item.ProductImageUrl}" }
+                        : null
                 }
             },
             Quantity = item.Quantity

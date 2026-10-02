@@ -10,4 +10,5 @@ public class OrderItem
     public string ProductName { get; set; } = string.Empty;   // snapshot - цената/името може да се промени по-късно
     public decimal UnitPrice { get; set; }                     // snapshot
     public int Quantity { get; set; }
+    public string? ProductImageUrl { get; set; }
 }

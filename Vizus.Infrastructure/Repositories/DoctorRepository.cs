@@ -19,7 +19,8 @@ public class DoctorRepository : IDoctorRepository
 
     public async Task AddAsync(Doctor doctor, CancellationToken ct)
         => await _context.Doctors.AddAsync(doctor, ct);
-
+    public async Task DeleteAsync(Doctor doctor, CancellationToken ct)
+    => await Task.Run(() => _context.Doctors.Remove(doctor), ct);
     public async Task SaveChangesAsync(CancellationToken ct)
         => await _context.SaveChangesAsync(ct);
 }

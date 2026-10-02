@@ -31,4 +31,21 @@ public class CategoriesController : ControllerBase
         var id = await _mediator.Send(command, ct);
         return CreatedAtAction(nameof(GetAll), new { id }, null);
     }
+    [HttpPut("{id}")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> Update(int id, UpdateCategoryRequest request, CancellationToken ct)
+    {
+        await _mediator.Send(new UpdateCategoryCommand(id, request.Name, request.ParentCategoryId), ct);
+        return NoContent();
+    }
+
+    [HttpDelete("{id}")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> Delete(int id, CancellationToken ct)
+    {
+        await _mediator.Send(new DeleteCategoryCommand(id), ct);
+        return NoContent();
+    }
+
+    public record UpdateCategoryRequest(string Name, int? ParentCategoryId);
 }

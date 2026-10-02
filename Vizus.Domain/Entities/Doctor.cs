@@ -8,6 +8,9 @@ public class Doctor
 
     public TimeSpan WorkStartTime { get; set; } = new TimeSpan(9, 0, 0);
     public TimeSpan WorkEndTime { get; set; } = new TimeSpan(17, 0, 0);
+    public string? ImageUrl { get; set; }
+    public string? Bio { get; set; }
+    public int? YearsOfExperience { get; set; }
 
     // CSV на DayOfWeek стойности (0=Неделя, 1=Понеделник ... 6=Събота), напр. "1,2,3,4,5" = Пон-Пет
     public string WorkingDaysCsv { get; set; } = "1,2,3,4,5";

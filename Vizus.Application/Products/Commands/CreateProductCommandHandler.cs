@@ -21,7 +21,9 @@ public class CreateProductCommandHandler : IRequestHandler<CreateProductCommand,
             Description = request.Description,
             Price = request.Price,
             StockQuantity = request.StockQuantity,
+            ImageUrl = request.ImageUrl,
             CategoryId = request.CategoryId
+
         };
 
         await _repository.AddAsync(product, ct);

@@ -23,7 +23,9 @@ public class GetAllProductsQueryHandler : IRequestHandler<GetAllProductsQuery, L
             Description = p.Description,
             Price = p.Price,
             StockQuantity = p.StockQuantity,
+            ImageUrl = p.ImageUrl,
             CategoryName = p.Category.Name
+
         }).ToList();
     }
 }

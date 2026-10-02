@@ -18,6 +18,8 @@ public class CreateDoctorCommandHandler : IRequestHandler<CreateDoctorCommand, i
             Specialty = request.Specialty,
             WorkStartTime = request.WorkStartTime,
             WorkEndTime = request.WorkEndTime,
+            Bio = request.Bio,
+            YearsOfExperience = request.YearsOfExperience,
             WorkingDaysCsv = request.WorkingDaysCsv
         };
 

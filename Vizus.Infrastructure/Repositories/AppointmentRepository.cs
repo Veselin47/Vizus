@@ -29,6 +29,15 @@ public class AppointmentRepository : IAppointmentRepository
     public async Task AddAsync(Appointment appointment, CancellationToken ct)
         => await _context.Appointments.AddAsync(appointment, ct);
 
+    public async Task<Appointment?> GetByIdAsync(int id, CancellationToken ct)
+        => await _context.Appointments.Include(a => a.Doctor).FirstOrDefaultAsync(a => a.Id == id, ct);
+
+    public async Task<List<Appointment>> GetAllAsync(CancellationToken ct)
+        => await _context.Appointments
+            .Include(a => a.Doctor)
+            .OrderByDescending(a => a.StartTime)
+            .ToListAsync(ct);
+
     public async Task SaveChangesAsync(CancellationToken ct)
         => await _context.SaveChangesAsync(ct);
 }

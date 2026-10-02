@@ -22,7 +22,8 @@ public class CategoryRepository : ICategoryRepository
 
     public async Task AddAsync(Category category, CancellationToken ct)
         => await _context.Categories.AddAsync(category, ct);
-
+    public async Task DeleteAsync(Category category, CancellationToken ct)
+    => await Task.Run(() => _context.Categories.Remove(category), ct);
     public async Task SaveChangesAsync(CancellationToken ct)
         => await _context.SaveChangesAsync(ct);
 }

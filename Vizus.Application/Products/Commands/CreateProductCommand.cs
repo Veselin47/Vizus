@@ -3,8 +3,5 @@
 namespace Vizus.Application.Products.Commands;
 
 public record CreateProductCommand(
-    string Name,
-    string Description,
-    decimal Price,
-    int StockQuantity,
-    int CategoryId) : IRequest<int>;
+    string Name, string Description, decimal Price,
+    int StockQuantity, int CategoryId, string? ImageUrl) : IRequest<int>;

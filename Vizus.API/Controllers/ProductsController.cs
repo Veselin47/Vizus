@@ -32,4 +32,22 @@ public class ProductsController : ControllerBase
         var id = await _mediator.Send(command, ct);
         return CreatedAtAction(nameof(GetAll), new { id }, null);
     }
+    [HttpPut("{id}")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> Update(int id, UpdateProductRequest request, CancellationToken ct)
+    {
+        await _mediator.Send(new UpdateProductCommand(
+            id, request.Name, request.Description, request.Price, request.StockQuantity, request.CategoryId, request.ImageUrl), ct);
+        return NoContent();
+    }
+
+    [HttpDelete("{id}")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> Delete(int id, CancellationToken ct)
+    {
+        await _mediator.Send(new DeleteProductCommand(id), ct);
+        return NoContent();
+    }
+
+    public record UpdateProductRequest(string Name, string Description, decimal Price, int StockQuantity, int CategoryId, string? ImageUrl);
 }

@@ -23,6 +23,8 @@ public class ProductRepository : IProductRepository
 
     public async Task AddAsync(Product product, CancellationToken ct)
         => await _context.Products.AddAsync(product, ct);
+    public async Task DeleteAsync(Product product, CancellationToken ct)
+    => await Task.Run(() => _context.Products.Remove(product), ct);
 
     public async Task SaveChangesAsync(CancellationToken ct)
         => await _context.SaveChangesAsync(ct);

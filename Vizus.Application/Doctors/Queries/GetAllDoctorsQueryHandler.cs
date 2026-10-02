@@ -16,7 +16,13 @@ public class GetAllDoctorsQueryHandler : IRequestHandler<GetAllDoctorsQuery, Lis
         {
             Id = d.Id,
             FullName = d.FullName,
-            Specialty = d.Specialty
+            ImageUrl = d.ImageUrl,
+            Specialty = d.Specialty,
+            WorkStartTime = d.WorkStartTime.ToString(@"hh\:mm\:ss"),
+            WorkEndTime = d.WorkEndTime.ToString(@"hh\:mm\:ss"),
+            WorkingDaysCsv = d.WorkingDaysCsv,
+            Bio = d.Bio,
+            YearsOfExperience = d.YearsOfExperience
         }).ToList();
     }
 }
