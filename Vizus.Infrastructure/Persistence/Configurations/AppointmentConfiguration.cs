@@ -18,7 +18,8 @@ public class AppointmentConfiguration : IEntityTypeConfiguration<Appointment>
             .HasForeignKey(a => a.DoctorId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        // предпазва от два appointment-а на СЪЩИЯ лекар в СЪЩОТО начално време (double-booking на DB ниво)
-        builder.HasIndex(a => new { a.DoctorId, a.StartTime }).IsUnique();
+        builder.HasIndex(a => new { a.DoctorId, a.StartTime })
+    .IsUnique()
+    .HasFilter("[Status] <> 'Cancelled'");
     }
 }

@@ -11,5 +11,14 @@ public class Order
     public string? StripeSessionId { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
+    public string RecipientName { get; set; } = string.Empty;
+    public string RecipientPhone { get; set; } = string.Empty;
+    public string RecipientEmail { get; set; } = string.Empty;
+    public string DeliveryType { get; set; } = string.Empty; // "Pickup", "EcontOffice", "EcontAddress"
+    public string? EcontOfficeCode { get; set; }
+    public string? EcontOfficeName { get; set; }
+    public string? DeliveryAddress { get; set; }
+
+
     public ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
 }

@@ -1,34 +1,51 @@
 ﻿using MediatR;
-using Vizus.Application.Common.Interfaces;
+using Vizus.Domain.Enums;
 using Vizus.Domain.Interfaces;
 
 namespace Vizus.Application.Appointments;
 
-public class GetAllAppointmentsQueryHandler : IRequestHandler<GetAllAppointmentsQuery, List<AppointmentAdminDto>>
+public class GetAvailableSlotsQueryHandler : IRequestHandler<GetAvailableSlotsQuery, List<TimeSlotDto>>
 {
-    private readonly IAppointmentRepository _appointmentRepository;
-    private readonly IUserLookupService _userLookupService;
+    private static readonly TimeSpan SlotDuration = TimeSpan.FromMinutes(30);
 
-    public GetAllAppointmentsQueryHandler(IAppointmentRepository appointmentRepository, IUserLookupService userLookupService)
+    private readonly IDoctorRepository _doctorRepository;
+    private readonly IAppointmentRepository _appointmentRepository;
+
+    public GetAvailableSlotsQueryHandler(IDoctorRepository doctorRepository, IAppointmentRepository appointmentRepository)
     {
+        _doctorRepository = doctorRepository;
         _appointmentRepository = appointmentRepository;
-        _userLookupService = userLookupService;
     }
 
-    public async Task<List<AppointmentAdminDto>> Handle(GetAllAppointmentsQuery request, CancellationToken ct)
+    public async Task<List<TimeSlotDto>> Handle(GetAvailableSlotsQuery request, CancellationToken ct)
     {
-        var appointments = await _appointmentRepository.GetAllAsync(ct);
+        var doctor = await _doctorRepository.GetByIdAsync(request.DoctorId, ct)
+            ?? throw new KeyNotFoundException("Лекарят не съществува.");
 
-        var userIds = appointments.Select(a => a.PatientUserId).Distinct().ToList();
-        var emails = await _userLookupService.GetEmailsByIdsAsync(userIds, ct);
+        var dayOfWeek = request.Date.DayOfWeek;
+        if (!doctor.GetWorkingDays().Contains(dayOfWeek))
+            return new List<TimeSlotDto>();
 
-        return appointments.Select(a => new AppointmentAdminDto
+        var timeOffs = await _appointmentRepository.GetTimeOffAsync(request.DoctorId, request.Date, ct);
+        if (timeOffs.Any())
+            return new List<TimeSlotDto>();
+
+        var allSlots = new List<TimeSlotDto>();
+        var current = request.Date.ToDateTime(TimeOnly.FromTimeSpan(doctor.WorkStartTime));
+        var end = request.Date.ToDateTime(TimeOnly.FromTimeSpan(doctor.WorkEndTime));
+
+        while (current + SlotDuration <= end)
         {
-            Id = a.Id,
-            DoctorName = a.Doctor.FullName,
-            PatientEmail = emails.GetValueOrDefault(a.PatientUserId, "—"),
-            StartTime = a.StartTime,
-            Status = a.Status.ToString()
-        }).ToList();
+            allSlots.Add(new TimeSlotDto(current, current + SlotDuration));
+            current += SlotDuration;
+        }
+
+        var existingAppointments = await _appointmentRepository.GetByDoctorAndDateAsync(request.DoctorId, request.Date, ct);
+        var occupied = existingAppointments
+            .Where(a => a.Status != AppointmentStatus.Cancelled)
+            .Select(a => a.StartTime)
+            .ToHashSet();
+
+        return allSlots.Where(slot => !occupied.Contains(slot.Start)).ToList();
     }
 }

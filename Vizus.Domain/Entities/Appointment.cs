@@ -13,4 +13,7 @@ public class Appointment
     public DateTime EndTime { get; set; }
     public AppointmentStatus Status { get; set; } = AppointmentStatus.Pending;
     public string? Notes { get; set; }
+    public string PatientPhone { get; set; } = string.Empty;
+    public string? ConfirmationToken { get; set; }
+    public DateTime? ConfirmedAt { get; set; }
 }

@@ -56,7 +56,14 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Cre
             UserId = request.UserId,
             TotalAmount = total,
             Status = OrderStatus.Pending,
-            OrderItems = orderItems
+            OrderItems = orderItems,
+            RecipientName = request.RecipientName,
+            RecipientPhone = request.RecipientPhone,
+            RecipientEmail = request.RecipientEmail,
+            DeliveryType = request.DeliveryType,
+            EcontOfficeCode = request.EcontOfficeCode,
+            EcontOfficeName = request.EcontOfficeName,
+            DeliveryAddress = request.DeliveryAddress,
         };
 
         await _orderRepository.AddAsync(order, ct);

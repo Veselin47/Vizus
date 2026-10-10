@@ -29,8 +29,17 @@ public class AppointmentsController : ControllerBase
     public async Task<IActionResult> Create([FromBody] CreateAppointmentRequest request, CancellationToken ct)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
-        var id = await _mediator.Send(new CreateAppointmentCommand(userId, request.DoctorId, request.StartTime), ct);
+        var id = await _mediator.Send(
+            new CreateAppointmentCommand(userId, request.DoctorId, request.StartTime, request.PatientPhone), ct);
         return Ok(new { id });
+    }
+
+    [HttpPost("confirm")]
+    [AllowAnonymous]
+    public async Task<IActionResult> Confirm([FromBody] ConfirmAppointmentRequest request, CancellationToken ct)
+    {
+        await _mediator.Send(new ConfirmAppointmentCommand(request.Token), ct);
+        return NoContent();
     }
 
     [HttpPut("{id}/status")]
@@ -54,4 +63,5 @@ public class AppointmentsController : ControllerBase
     }
 }
 
-public record CreateAppointmentRequest(int DoctorId, DateTime StartTime);
+public record CreateAppointmentRequest(int DoctorId, DateTime StartTime, string PatientPhone);
+public record ConfirmAppointmentRequest(string Token);

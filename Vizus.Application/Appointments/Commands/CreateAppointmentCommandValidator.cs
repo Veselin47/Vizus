@@ -12,5 +12,8 @@ public class CreateAppointmentCommandValidator : AbstractValidator<CreateAppoint
         RuleFor(x => x.StartTime)
             .Must(startTime => startTime > DateTime.Now)
             .WithMessage("Не можеш да записваш час в миналото.");
+        RuleFor(x => x.PatientPhone)
+            .NotEmpty().WithMessage("Телефонният номер е задължителен.")
+            .Matches(@"^\+?[0-9\s\-]{7,15}$").WithMessage("Невалиден телефонен номер.");
     }
 }

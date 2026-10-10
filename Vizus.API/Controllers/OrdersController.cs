@@ -19,10 +19,19 @@ public class OrdersController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create(List<OrderItemRequest> items, CancellationToken ct)
+    public async Task<IActionResult> Create(CreateOrderRequest request, CancellationToken ct)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
-        var result = await _mediator.Send(new CreateOrderCommand(userId, items), ct);
+        var command = new CreateOrderCommand(
+            userId, request.Items, request.RecipientName, request.RecipientPhone,
+            request.RecipientEmail, request.DeliveryType, request.EcontOfficeCode,
+            request.EcontOfficeName, request.DeliveryAddress);
+        var result = await _mediator.Send(command, ct);
         return Ok(result);
     }
+
+    public record CreateOrderRequest(
+        List<OrderItemRequest> Items, string RecipientName, string RecipientPhone,
+        string RecipientEmail, string DeliveryType, string? EcontOfficeCode,
+        string? EcontOfficeName, string? DeliveryAddress);
 }

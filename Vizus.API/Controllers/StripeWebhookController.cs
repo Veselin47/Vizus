@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Stripe;
 using Stripe.Checkout;
+using Vizus.Application.Common.Interfaces;
 using Vizus.Domain.Enums;
 using Vizus.Domain.Interfaces;
 
@@ -12,11 +13,19 @@ public class StripeWebhookController : ControllerBase
 {
     private readonly IOrderRepository _orderRepository;
     private readonly IConfiguration _configuration;
+    private readonly IEmailService _emailService;
+    private readonly ILogger<StripeWebhookController> _logger;
 
-    public StripeWebhookController(IOrderRepository orderRepository, IConfiguration configuration)
+    public StripeWebhookController(
+        IOrderRepository orderRepository,
+        IConfiguration configuration,
+        IEmailService emailService,
+        ILogger<StripeWebhookController> logger)
     {
         _orderRepository = orderRepository;
         _configuration = configuration;
+        _emailService = emailService;
+        _logger = logger;
     }
 
     [HttpPost("webhook")]
@@ -38,10 +47,22 @@ public class StripeWebhookController : ControllerBase
                 var orderId = int.Parse(session!.Metadata["orderId"]);
 
                 var order = await _orderRepository.GetByIdAsync(orderId, CancellationToken.None);
-                if (order is not null)
+
+                // Проверяваме дали вече не е Paid - Stripe понякога праща същото събитие повторно,
+                // а не искаме да изпратим дублиран имейл на клиента
+                if (order is not null && order.Status != OrderStatus.Paid)
                 {
                     order.Status = OrderStatus.Paid;
                     await _orderRepository.SaveChangesAsync(CancellationToken.None);
+
+                    try
+                    {
+                        await _emailService.SendOrderConfirmationAsync(order, CancellationToken.None);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Failed to send order confirmation email for order {OrderId}", order.Id);
+                    }
                 }
             }
 

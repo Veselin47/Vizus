@@ -18,4 +18,9 @@ public class UserLookupService : IUserLookupService
             .Where(u => userIds.Contains(u.Id))
             .ToDictionaryAsync(u => u.Id, u => u.Email ?? "—", ct);
     }
+    public async Task<string?> GetEmailByIdAsync(string userId, CancellationToken ct)
+    {
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId, ct);
+        return user?.Email;
+    }
 }

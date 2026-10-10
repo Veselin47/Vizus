@@ -9,5 +9,6 @@ public interface IAppointmentRepository
     Task<List<DoctorTimeOff>> GetTimeOffAsync(int doctorId, DateOnly date, CancellationToken ct);
     Task AddAsync(Appointment appointment, CancellationToken ct);
     Task<List<Appointment>> GetAllAsync(CancellationToken ct);
+    Task<Appointment?> GetByConfirmationTokenAsync(string token, CancellationToken ct);
     Task SaveChangesAsync(CancellationToken ct);
 }

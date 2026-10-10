@@ -37,7 +37,18 @@ public class AppointmentRepository : IAppointmentRepository
             .Include(a => a.Doctor)
             .OrderByDescending(a => a.StartTime)
             .ToListAsync(ct);
+    public async Task<Appointment?> GetByConfirmationTokenAsync(string token, CancellationToken ct)
+    => await _context.Appointments.FirstOrDefaultAsync(a => a.ConfirmationToken == token, ct);
 
     public async Task SaveChangesAsync(CancellationToken ct)
-        => await _context.SaveChangesAsync(ct);
+    {
+        try
+        {
+            await _context.SaveChangesAsync(ct);
+        }
+        catch (DbUpdateException ex) when (ex.InnerException is Microsoft.Data.SqlClient.SqlException { Number: 2601 or 2627 })
+        {
+            throw new InvalidOperationException("Този час вече е зает.");
+        }
+    }
 }

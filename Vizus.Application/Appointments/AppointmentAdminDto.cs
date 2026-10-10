@@ -7,4 +7,5 @@ public class AppointmentAdminDto
     public string PatientEmail { get; set; } = string.Empty;
     public DateTime StartTime { get; set; }
     public string Status { get; set; } = string.Empty;
+    public string PatientPhone { get; set; } = string.Empty;
 }
