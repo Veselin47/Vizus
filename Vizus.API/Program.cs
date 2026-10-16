@@ -40,7 +40,9 @@ builder.Services.AddScoped<IDoctorRepository, DoctorRepository>();
 builder.Services.AddScoped<IAppointmentRepository, AppointmentRepository>();
 builder.Services.AddScoped<IUserLookupService, UserLookupService>();
 builder.Services.AddScoped<IEmailService, Vizus.Infrastructure.Email.EmailService>();
+
 builder.Services.AddHttpClient<IEcontService, EcontService>();
+builder.Services.AddMemoryCache();
 
 builder.Services.AddValidatorsFromAssembly(typeof(Vizus.Application.Products.Queries.GetAllProductsQuery).Assembly);
 builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
