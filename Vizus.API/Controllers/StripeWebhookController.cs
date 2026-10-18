@@ -14,17 +14,20 @@ public class StripeWebhookController : ControllerBase
     private readonly IOrderRepository _orderRepository;
     private readonly IConfiguration _configuration;
     private readonly IEmailService _emailService;
+    private readonly IProductRepository _productRepository;
     private readonly ILogger<StripeWebhookController> _logger;
 
     public StripeWebhookController(
         IOrderRepository orderRepository,
         IConfiguration configuration,
         IEmailService emailService,
+        IProductRepository productRepository,
         ILogger<StripeWebhookController> logger)
     {
         _orderRepository = orderRepository;
         _configuration = configuration;
         _emailService = emailService;
+        _productRepository = productRepository;
         _logger = logger;
     }
 
@@ -48,11 +51,21 @@ public class StripeWebhookController : ControllerBase
 
                 var order = await _orderRepository.GetByIdAsync(orderId, CancellationToken.None);
 
-                // Проверяваме дали вече не е Paid - Stripe понякога праща същото събитие повторно,
-                // а не искаме да изпратим дублиран имейл на клиента
-                if (order is not null && order.Status != OrderStatus.Paid)
+                // Обработваме само неплатена поръчка. Stripe може да прати същото събитие повторно,
+                // а поръчката може междувременно да е вече изпратена или завършена.
+                if (order is not null && order.Status == OrderStatus.Pending)
                 {
                     order.Status = OrderStatus.Paid;
+
+                    // Намаляваме наличността. Всички репозиторита споделят един DbContext,
+                    // така че едно SaveChangesAsync записва и статуса, и наличностите.
+                    foreach (var item in order.OrderItems)
+                    {
+                        var product = await _productRepository.GetByIdAsync(item.ProductId, CancellationToken.None);
+                        if (product is not null)
+                            product.StockQuantity = Math.Max(0, product.StockQuantity - item.Quantity);
+                    }
+
                     await _orderRepository.SaveChangesAsync(CancellationToken.None);
 
                     try

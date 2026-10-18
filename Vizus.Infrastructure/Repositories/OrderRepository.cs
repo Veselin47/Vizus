@@ -25,6 +25,12 @@ public class OrderRepository : IOrderRepository
     public async Task AddAsync(Order order, CancellationToken ct)
         => await _context.Orders.AddAsync(order, ct);
 
+    public async Task<List<Order>> GetAllAsync(CancellationToken ct)
+    => await _context.Orders
+        .Include(o => o.OrderItems)
+        .OrderByDescending(o => o.CreatedAt)
+        .ToListAsync(ct);
+
     public async Task SaveChangesAsync(CancellationToken ct)
         => await _context.SaveChangesAsync(ct);
 }
